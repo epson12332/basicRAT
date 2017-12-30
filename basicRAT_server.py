@@ -152,7 +152,7 @@ class ClientConnection():
 
 
 def get_parser():
-    parser = argparse.ArgumentParser(description='basicRAT server')
+    parser = argparse.ArgumentParser(description='RAT server')
     parser.add_argument('-p', '--port', help='Port to listen on.',
                         default=1337, type=int)
     return parser
@@ -170,7 +170,7 @@ def main():
     server = Server(port)
     server.setDaemon(True)
     server.start()
-    print 'basicRAT server listening for connections on port {}.'.format(port)
+    print 'RAT server listening for connections on port {}.'.format(port)
 
     # server side commands
     server_commands = {
@@ -203,7 +203,7 @@ def main():
         else:
             ccid = '?'
 
-        prompt = raw_input('\n[{}] basicRAT> '.format(ccid)).rstrip()
+        prompt = raw_input('\n[{}] RAT> '.format(ccid)).rstrip()
 
         # allow noop
         if not prompt:
